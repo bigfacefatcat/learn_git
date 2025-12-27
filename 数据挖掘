@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>300PB 数据挖掘架构升级方案 - Alluxio</title>
+    <style>
+        :root {
+            --primary-color: #0052cc;
+            --secondary-color: #f4f5f7;
+            --text-color: #333;
+            --light-text: #666;
+            --accent-green: #36b37e;
+            --accent-red: #ff5630;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header Section */
+        header {
+            background: linear-gradient(135deg, #0052cc 0%, #0747a6 100%);
+            color: white;
+            padding: 3rem 1rem;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 1rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Toggle Switch */
+        .mode-switch-container {
+            display: flex;
+            justify-content: center;
+            margin: -25px auto 30px;
+        }
+
+        .mode-switch {
+            background: white;
+            padding: 5px;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            gap: 5px;
+        }
+
+        .mode-btn {
+            border: none;
+            background: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            color: var(--light-text);
+        }
+
+        .mode-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,82,204,0.3);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px 50px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .card h3 {
+            color: #172b4d;
+            margin-top: 1.5rem;
+        }
+
+        /* Story Mode Styles */
+        .story-icon {
+            font-size: 1.5rem;
+            margin-right: 8px;
+        }
+
+        .analogy-box {
+            background-color: #e6fcff;
+            border-left: 4px solid #00b8d9;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Tech Mode Styles */
+        .tech-tag {
+            background: #dfe1e6;
+            color: #091e42;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        /* Comparison Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #dfe1e6;
+        }
+
+        th {
+            background-color: var(--secondary-color);
+            font-weight: 700;
+            color: #172b4d;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .good { color: var(--accent-green); font-weight: 600; }
+        .bad { color: var(--accent-red); font-weight: 600; }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--light-text);
+            font-size: 0.9rem;
+            border-top: 1px solid #dfe1e6;
+            margin-top: 2rem;
+        }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8rem; }
+            .card { padding: 1.5rem; }
+            th, td { font-size: 0.9rem; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>自动驾驶数据挖掘架构升级</h1>
+        <p>应对 300PB 海量数据与 10 万并发挑战的解决方案</p>
+    </header>
+
+    <div class="mode-switch-container">
+        <div class="mode-switch">
+            <button class="mode-btn active" onclick="switchMode('story')" id="btn-story">📖 通俗易懂版</button>
+            <button class="mode-btn" onclick="switchMode('tech')" id="btn-tech">⚙️ 技术架构版</button>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div id="story-view" class="fade-in">
+            <div class="card">
+                <h2>🤖 第一幕：巨型机器人图书馆</h2>
+                <p>想象我们经营着一家<strong>“机器人驾驶学校”</strong>。每天，成千上万的机器人（自动驾驶车）把看到的画面和数据记录下来。</p>
+                <ul>
+                    <li><strong>藏书量（300PB）</strong>：相当于几百亿本厚书，堆满了无数个地下仓库。</li>
+                    <li><strong>特殊的日记（MCAP）</strong>：这不是普通的日记，而是<strong>“带目录的超级手账”</strong>。想看“下午2点”发生的事，或者只看“左眼摄像头”，可以瞬间翻到那一页，不用从头读到尾。</li>
+                    <li><strong>现在的管理员（JFS）</strong>：有一个管理员团队负责去地下仓库取书，借给来学习的学生。</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>😫 第二幕：图书馆“爆单”了</h2>
+                <div class="analogy-box">
+                    <strong>痛点：</strong> 生意太好，10 万个学生（任务）同时来借书，图书馆崩了。
+                </div>
+                <h3>1. 门口堵死了</h3>
+                <p>原来的管理员团队有一个“总管”。每个学生借书都要先问总管。当 10 万人同时问话时，总管<strong>累瘫了</strong>，门口排起长龙。</p>
+                
+                <h3>2. 手续太繁琐</h3>
+                <p>以前借书必须办一张<strong>“实体借书证”</strong>（FUSE 挂载），还要把书包挂在指定位置。流程繁琐，学生们怨声载道。</p>
+            </div>
+
+            <div class="card">
+                <h2>🚀 第三幕：Alluxio 智能物流系统</h2>
+                <p>我们引入了全新的 Alluxio 系统，彻底改造了图书馆。</p>
+                
+                <h3>1. 全员经理制（不再依赖总管）</h3>
+                <p>Alluxio 采用了<strong>“去中心化”</strong>管理。它把几十亿本书的目录平均分给了所有窗口的工作人员。</p>
+                <p>👉 找《书A》去 1 号窗，找《书B》去 2 号窗。<strong>哪怕来 10 万人，大家分散排队，谁也不堵。</strong></p>
+
+                <h3>2. 送书上门（无需办证）</h3>
+                <p>学生不用再办“实体借书证”了。系统给每人发一个<strong>“智能平板”</strong>（SDK）。想看什么书，点一下，内容直接传送到平板上。</p>
+            </div>
+        </div>
+
+        <div id="tech-view" class="hidden fade-in">
+            <div class="card">
+                <h2>📊 业务背景与规模 (Context)</h2>
+                <ul>
+                    <li><strong>数据规模</strong>：300PB+ (BOS + JFS私有格式)，1500亿+ 文件。</li>
+                    <li><strong>IO特征</strong>：5~10 Tb/s 吞吐，MCAP 格式（需支持 Seek/Range Read）。</li>
+                    <li><strong>并发挑战</strong>：10 万+ 并发任务，20 万+ IO 流，单集群万级并发即成为瓶颈。</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>❌ 现有架构瓶颈 (Pain Points)</h2>
+                <h3>1. 元数据单点瓶颈</h3>
+                <p>JFS 采用集中式 Master 架构。在 10 万级并发下，Master 无法处理海量 Open/Lookup 请求，导致必须物理拆分多个集群，带来严重的<strong>数据孤岛</strong>和运维复杂性。</p>
+
+                <h3>2. FUSE 挂载弊端</h3>
+                <p>业务 Pod 强依赖 FUSE 挂载。上下文切换（User/Kernel mode switch）开销大，且 FUSE 进程崩溃会影响整个节点稳定性。部署流程繁琐，不符合 K8S 云原生最佳实践。</p>
+            </div>
+
+            <div class="card">
+                <h2>✅ 目标架构：Alluxio DORA</h2>
+                <h3>1. DORA 架构 (Distributed Object Repository)</h3>
+                <p><span class="tech-tag">一致性哈希</span> <span class="tech-tag">去中心化</span></p>
+                <p>通过一致性哈希算法将元数据分散到所有 Worker 节点。每个 Worker 可管理 5000 万+ 文件。并发能力随 Worker 数量<strong>线性扩展</strong>，彻底消除 Master 单点瓶颈。</p>
+
+                <h3>2. 无 FUSE 的 SDK 集成</h3>
+                <p><span class="tech-tag">Python SDK</span> <span class="tech-tag">Zero-Copy</span></p>
+                <p>MCAP 框架通过 SDK 直连 Alluxio。移除 FUSE 开销，降低延迟。原生支持 Range Read，利用 MCAP 的 <code>Message Index</code> 实现毫秒级帧定位。</p>
+                
+                <h3>3. Cluster Cache 策略</h3>
+                <p>替代 Localcache。在 Worker 内存/SSD 层构建分布式共享缓存，显著降低 BOS 带宽压力，提升训练任务的数据复用率。</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚖️ 核心方案对比</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>维度</th>
+                        <th>旧方案 (JFS)</th>
+                        <th>新方案 (Alluxio)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>核心架构</strong></td>
+                        <td>集中式 Master (单点瓶颈)</td>
+                        <td><span class="good">DORA 分布式 (线性扩展)</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>并发支撑</strong></td>
+                        <td><span class="bad">卡顿</span> (单集群难以支撑万级)</td>
+                        <td><span class="good">丝滑</span> (轻松支撑 10 万+)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>接入方式</strong></td>
+                        <td>FUSE 挂载 (繁琐、重)</td>
+                        <td><span class="good">SDK 集成 (轻量、快)</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>扩展性</strong></td>
+                        <td>需拆分多集群，运维 O(N)</td>
+                        <td><span class="good">单集群弹性伸缩，运维 O(1)</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Generated for Alluxio Solution Proposal | 2025</p>
+    </footer>
+
+    <script>
+        function switchMode(mode) {
+            const storyView = document.getElementById('story-view');
+            const techView = document.getElementById('tech-view');
+            const btnStory = document.getElementById('btn-story');
+            const btnTech = document.getElementById('btn-tech');
+
+            if (mode === 'story') {
+                storyView.classList.remove('hidden');
+                techView.classList.add('hidden');
+                btnStory.classList.add('active');
+                btnTech.classList.remove('active');
+            } else {
+                storyView.classList.add('hidden');
+                techView.classList.remove('hidden');
+                btnStory.classList.remove('active');
+                btnTech.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
